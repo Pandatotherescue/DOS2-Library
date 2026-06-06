@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rivellon Crafting Codex — Divinity: Original Sin 2</title>
+<meta name="description" content="Searchable crafting library for Divinity: Original Sin 2 Definitive Edition. Find recipes by result or by reagent." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0d0f12;
+    --bg2: #14181d;
+    --ink: #e9e0cb;
+    --ink-dim: #b3a888;
+    --parchment: #1c2127;
+    --parchment-2: #20262d;
+    --line: #3a3326;
+    --gold: #c9a24b;
+    --gold-bright: #e8c469;
+    --source: #4fd6b6;
+    --source-dim: #2c8773;
+    --blood: #b6483f;
+    --air: #8fb6e8;
+    --earth: #b08a4f;
+    --fire: #e08a4a;
+    --water: #5aa9d6;
+    --necro: #9b7bc4;
+    --summon: #d68fb0;
+    --poly: #8fd69a;
+    --radius: 10px;
+    --shadow: 0 14px 34px -12px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "EB Garamond", Georgia, serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 700px at 78% -8%, rgba(201,162,75,.10), transparent 60%),
+      radial-gradient(900px 600px at 8% 8%, rgba(79,214,182,.07), transparent 55%),
+      linear-gradient(180deg, #0b0d10, #0d0f12 40%, #0a0c0f);
+    min-height: 100vh;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: .6;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 20px 90px; }
+
+  /* ---------- Header ---------- */
+  header.masthead { text-align: center; padding: 54px 10px 26px; }
+  .crest {
+    width: 58px; height: 58px; margin: 0 auto 14px; display: block;
+    filter: drop-shadow(0 0 16px rgba(201,162,75,.4));
+  }
+  h1 {
+    font-family: "Cinzel Decorative", "Cinzel", serif;
+    font-weight: 900;
+    letter-spacing: .04em;
+    margin: 0;
+    font-size: clamp(30px, 5.6vw, 52px);
+    background: linear-gradient(180deg, #f3e0a6, var(--gold) 55%, #8e6f2d);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 30px rgba(201,162,75,.18);
+  }
+  .subtitle {
+    color: var(--ink-dim); font-style: italic; margin: 8px 0 0;
+    letter-spacing: .02em; font-size: clamp(15px, 2.2vw, 19px);
+  }
+  .rule {
+    height: 1px; width: min(560px, 90%); margin: 20px auto 0;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    position: relative;
+  }
+  .rule::after {
+    content: "\2756"; position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%,-50%); color: var(--gold-bright);
+    background: var(--bg); padding: 0 12px; font-size: 13px;
+  }
+
+  /* ---------- Search ---------- */
+  .search-shell { position: sticky; top: 0; z-index: 20; padding: 16px 0 14px;
+    background: linear-gradient(180deg, rgba(10,12,15,.96) 70%, rgba(10,12,15,0)); }
+  .search-box { position: relative; max-width: 720px; margin: 0 auto; }
+  .search-box .ico {
+    position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+    width: 21px; height: 21px; color: var(--gold); pointer-events: none;
+  }
+  #search {
+    width: 100%; padding: 16px 52px 16px 50px;
+    font-family: "EB Garamond", serif; font-size: 19px;
+    color: var(--ink); background: linear-gradient(180deg, var(--parchment-2), var(--parchment));
+    border: 1px solid var(--line); border-radius: 14px; outline: none;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.03);
+    transition: border-color .2s, box-shadow .2s;
+  }
+  #search::placeholder { color: #6f6750; font-style: italic; }
+  #search:focus { border-color: var(--gold); box-shadow: var(--shadow), 0 0 0 3px rgba(201,162,75,.14); }
+  .clear-btn {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border: none; cursor: pointer; border-radius: 8px;
+    background: rgba(255,255,255,.05); color: var(--ink-dim); font-size: 18px;
+    display: none; align-items: center; justify-content: center; line-height: 1;
+  }
+  .clear-btn:hover { background: rgba(182,72,63,.2); color: var(--ink); }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 16px auto 0; max-width: 980px; }
+  .chip {
+    font-family: "Cinzel", serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    padding: 7px 14px; border-radius: 999px; cursor: pointer; user-select: none;
+    color: var(--ink-dim); background: rgba(255,255,255,.025);
+    border: 1px solid var(--line); transition: all .16s;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--gold); }
+  .chip.active { color: #15120a; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border-color: var(--gold-bright); font-weight: 600; box-shadow: 0 4px 14px -4px rgba(201,162,75,.5); }
+
+  .toggles { display: flex; gap: 10px; justify-content: center; margin: 12px auto 0; flex-wrap: wrap; }
+  .toggle {
+    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+    font-size: 13.5px; color: var(--ink-dim); padding: 5px 11px; border-radius: 8px;
+    border: 1px solid transparent;
+  }
+  .toggle:hover { color: var(--ink); }
+  .toggle input { accent-color: var(--source); width: 15px; height: 15px; }
+  .toggle .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .toggle .ck { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .toggle .hg { background: var(--source); box-shadow: 0 0 8px var(--source); }
+
+  /* ---------- Counts / context bar ---------- */
+  .context { text-align: center; margin: 22px auto 4px; min-height: 26px; }
+  .context .count { color: var(--ink-dim); font-size: 14.5px; letter-spacing: .03em; }
+  .reagent-banner {
+    max-width: 760px; margin: 0 auto 6px; padding: 14px 18px; border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(79,214,182,.08), rgba(79,214,182,.02));
+    border: 1px solid var(--source-dim); display: flex; align-items: center; gap: 12px; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .reagent-banner .ttl { font-family: "Cinzel", serif; color: var(--source); letter-spacing: .04em; }
+  .reagent-banner .name { color: var(--gold-bright); font-weight: 600; }
+
+  /* ---------- Category sections ---------- */
+  .cat-head {
+    display: flex; align-items: center; gap: 14px; margin: 40px 0 16px;
+  }
+  .cat-head h2 {
+    font-family: "Cinzel", serif; font-weight: 600; letter-spacing: .06em;
+    font-size: 20px; margin: 0; color: var(--gold-bright); white-space: nowrap;
+    text-transform: uppercase;
+  }
+  .cat-head .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+  .cat-head .tally { font-size: 13px; color: var(--ink-dim); font-family: "Cinzel", serif; }
+
+  /* ---------- Recipe grid ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; }
+  .card {
+    background: linear-gradient(180deg, var(--parchment-2), var(--parchment));
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 16px 14px; box-shadow: var(--shadow);
+    position: relative; overflow: hidden;
+    transition: transform .18s, border-color .18s, box-shadow .18s;
+  }
+  .card::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, var(--gold), transparent);
+    opacity: .55;
+  }
+  .card:hover { transform: translateY(-3px); border-color: rgba(201,162,75,.55); box-shadow: 0 20px 40px -14px rgba(0,0,0,.8); }
+  .card.mod-ck::before { background: linear-gradient(180deg, var(--gold), transparent); }
+  .card.mod-hg::before { background: linear-gradient(180deg, var(--source), transparent); }
+
+  .result-row { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 4px; }
+  .result-icon { flex: none; width: 36px; height: 36px; }
+  .result-name {
+    font-family: "Cinzel", serif; font-size: 17px; font-weight: 600; color: var(--ink);
+    letter-spacing: .015em; line-height: 1.25;
+  }
+  .result-name b { color: var(--gold-bright); font-weight: 600; }
+  .mod-tag {
+    display: inline-block; font-family: "Cinzel", serif; font-size: 9.5px; letter-spacing: .1em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 5px; margin-left: 7px; vertical-align: middle;
+    transform: translateY(-1px);
+  }
+  .mod-tag.ck { color: #1a1407; background: var(--gold); }
+  .mod-tag.hg { color: #06231d; background: var(--source); }
+  .effect { font-style: italic; color: var(--source); font-size: 13.5px; margin: 2px 0 0 47px; }
+
+  .recipe-divider { display: flex; align-items: center; gap: 8px; margin: 11px 0 9px 0; }
+  .recipe-divider .ln { flex: 1; height: 1px; background: var(--line); }
+  .recipe-divider .lbl { font-family: "Cinzel", serif; font-size: 10px; letter-spacing: .14em; color: var(--ink-dim); text-transform: uppercase; }
+
+  .ingredients { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .reagent {
+    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+    background: rgba(0,0,0,.22); border: 1px solid var(--line); border-radius: 8px;
+    padding: 5px 9px 5px 6px; font-size: 14.5px; color: var(--ink);
+    transition: all .15s; max-width: 100%;
+  }
+  .reagent:hover { border-color: var(--gold); background: rgba(201,162,75,.12); color: var(--gold-bright); }
+  .reagent.is-station { border-style: dashed; color: var(--ink-dim); }
+  .reagent.is-station:hover { color: var(--ink); }
+  .reagent .ri { width: 20px; height: 20px; flex: none; }
+  .reagent .rt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 230px; }
+  .reagent mark { background: rgba(201,162,75,.32); color: var(--gold-bright); border-radius: 3px; padding: 0 2px; }
+  .plus { color: var(--ink-dim); font-size: 15px; padding: 0 1px; user-select: none; }
+
+  /* ---------- Empty / footer ---------- */
+  .empty { text-align: center; color: var(--ink-dim); padding: 70px 20px; font-style: italic; }
+  .empty .big { font-family: "Cinzel", serif; font-size: 22px; color: var(--gold); font-style: normal; margin-bottom: 8px; letter-spacing: .04em; }
+  footer { text-align: center; margin-top: 64px; color: #6f6750; font-size: 13px; line-height: 1.7; }
+  footer a { color: var(--gold); text-decoration: none; border-bottom: 1px dotted var(--gold); }
+  footer a:hover { color: var(--gold-bright); }
+
+  .back-top {
+    position: fixed; right: 22px; bottom: 22px; z-index: 30;
+    width: 46px; height: 46px; border-radius: 50%; cursor: pointer;
+    background: linear-gradient(180deg, var(--parchment-2), var(--parchment));
+    border: 1px solid var(--gold); color: var(--gold-bright);
+    display: none; align-items: center; justify-content: center; box-shadow: var(--shadow);
+  }
+  .back-top:hover { background: var(--gold); color: #15120a; }
+
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    .grid { grid-template-columns: 1fr; }
+    .reagent .rt { max-width: 150px; }
+    header.masthead { padding: 36px 6px 16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="masthead">
+      <svg class="crest" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M32 3l5 9 10-3-3 10 9 5-9 5 3 10-10-3-5 9-5-9-10 3 3-10-9-5 9-5-3-10 10 3z" stroke="#c9a24b" stroke-width="1.6" fill="rgba(201,162,75,.08)"/>
+        <circle cx="32" cy="32" r="9" stroke="#4fd6b6" stroke-width="1.6" fill="rgba(79,214,182,.12)"/>
+        <circle cx="32" cy="32" r="3" fill="#4fd6b6"/>
+      </svg>
+      <h1>Rivellon Crafting Codex</h1>
+      <p class="subtitle">A searchable grimoire of crafting for Divinity: Original Sin 2 — Definitive Edition</p>
+      <div class="rule"></div>
+    </header>
+
+    <div class="search-shell">
+      <div class="search-box">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+        </svg>
+        <input id="search" type="text" autocomplete="off" spellcheck="false"
+          placeholder="Search a recipe or a reagent — e.g. “Source Orb”, “Fireball”, “Empty Bottle”…" />
+        <button class="clear-btn" id="clear" aria-label="Clear search">&times;</button>
+      </div>
+      <div class="filters" id="filters"></div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="tgl-ck" checked /><span class="dot ck"></span> Crafter's Kit mod</label>
+        <label class="toggle"><input type="checkbox" id="tgl-hg" checked /><span class="dot hg"></span> Herb Gardens mod</label>
+      </div>
+    </div>
+
+    <div class="context" id="context"></div>
+    <div id="results"></div>
+
+    <footer>
+      <div class="rule" style="margin-bottom:20px"></div>
+      Recipe data compiled from Mellarius' <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1137514488" target="_blank" rel="noopener">“Complete crafting tables (700+ positions)”</a> Steam guide.<br/>
+      <span style="opacity:.7">Divinity: Original Sin 2 is &copy; Larian Studios. This is an unofficial fan reference. Icons are stylised, not extracted game assets.</span>
+    </footer>
+  </div>
+
+  <button class="back-top" id="backTop" aria-label="Back to top">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <script src="recipes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
